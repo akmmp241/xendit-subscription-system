@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\SessionHandler;
+
 abstract class Controller
 {
+    use SessionHandler;
     protected function respondWithToken($token): array
     {
         return [

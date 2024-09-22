@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->text('refresh_token')->nullable();
+            $table->dateTime('expires_at')->nullable();
         });
     }
 

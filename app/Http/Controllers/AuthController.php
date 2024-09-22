@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RefreshTokenRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -39,7 +40,7 @@ class AuthController extends Controller
             $user = User::query()->create($requests);
 
             $customer = $this->customerApi->createCustomer(customer_request: [
-                "reference_id" => "$user->id",
+                "reference_id" => uniqid(base64_encode($user->id) . '-'),
                 "type" => "INDIVIDUAL",
                 "individual_detail" => [
                     "given_names" => $user->name,
@@ -52,6 +53,9 @@ class AuthController extends Controller
                 "customer_id" => $customer->getId(),
                 "user_id" => $user->id,
             ]);
+
+            $token = Auth::login($user);
+            $refreshToken = $this->createSession();
 
             DB::commit();
         } catch (XenditSdkException $e) {
@@ -67,7 +71,10 @@ class AuthController extends Controller
         return Response::json([
             "status" => "CREATED",
             "message" => "User Created Successfully",
-            "data" => new UserResource($user),
+            "data" => [
+                ...$this->respondWithToken($token),
+                'refresh_token' => $refreshToken,
+            ],
             "errors" => null
         ])->setStatusCode(ResponseCode::HTTP_CREATED);
     }
@@ -82,6 +89,7 @@ class AuthController extends Controller
             throw new UnauthorizedException("Invalid Credentials");
         }
 
+        $refreshToken = $this->createSession();
         $user = User::query()->where('email', $requests["email"])->first();
 
         return Response::json([
@@ -89,6 +97,7 @@ class AuthController extends Controller
             "message" => "User Login Successfully",
             "data" => [
                 ...$this->respondWithToken($token),
+                'refresh_token' => $refreshToken,
                 "user" => new UserResource($user),
             ],
             "errors" => null
@@ -97,6 +106,7 @@ class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
+        $this->destroySession();
         Auth::logout();
 
         return Response::json([
@@ -107,13 +117,29 @@ class AuthController extends Controller
         ]);
     }
 
-    public function refresh(): JsonResponse
+    /**
+     * @throws InternalErrorException
+     */
+    public function refresh(RefreshTokenRequest $request): JsonResponse
     {
+        $requests = $request->validated();
+
+        try {
+            Auth::invalidate();
+            $session = $this->checkRefreshToken($requests["refresh_token"]);
+            $token = Auth::login($session->user);
+        } catch (UnauthorizedException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            throw new InternalErrorException("Failed to process refresh token");
+        }
+
         return Response::json([
             "status" => "OK",
-            "message" => "Success Get Refresh Token",
+            "message" => "Success Refresh Token",
             "data" => [
-                ...$this->respondWithToken(Auth::refresh()),
+                ...$this->respondWithToken($token),
             ],
             "errors" => null
         ]);
