@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class XenditCustomer extends Model
@@ -29,18 +30,18 @@ class XenditCustomer extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function userPaymentMethods(): BelongsTo
+    public function userPaymentMethods(): HasMany
     {
-        return $this->belongsTo(UserPaymentMethods::class, 'customer_id', 'customer_id');
+        return $this->hasMany(UserPaymentMethods::class, 'customer_id', 'customer_id');
     }
 
-    public function xenditPlan(): BelongsTo
+    public function xenditPlan(): HasOne
     {
-        return $this->belongsTo(XenditPlans::class, 'customer_id', 'customer_id');
+        return $this->hasOne(XenditPlans::class, 'customer_id', 'customer_id');
     }
 
-    public function planCycle(): BelongsTo
+    public function planCycle(): HasMany
     {
-        return $this->belongsTo(PlanCycles::class, 'customer_id', 'customer_id');
+        return $this->hasMany(PlanCycles::class, 'customer_id', 'customer_id');
     }
 }

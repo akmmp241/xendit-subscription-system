@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PlanCycles extends Model
@@ -27,13 +28,13 @@ class PlanCycles extends Model
         ];
     }
 
-    public function customer(): HasOne
+    public function customer(): BelongsTo
     {
-        return $this->hasOne(XenditCustomer::class, 'customer_id', 'customer_id');
+        return $this->belongsTo(XenditCustomer::class, 'customer_id', 'customer_id');
     }
 
-    public function plan(): HasOne
+    public function plan(): BelongsTo
     {
-        return $this->hasOne(XenditPlans::class, 'id', 'plan_id');
+        return $this->belongsTo(XenditPlans::class, 'plan_id');
     }
 }

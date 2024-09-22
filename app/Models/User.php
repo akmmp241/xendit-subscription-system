@@ -45,7 +45,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function xenditCustomer(): HasOne
     {
-        return $this->hasOne(XenditCustomer::class, 'user_id', 'id');
+        return $this->hasOne(XenditCustomer::class, 'user_id');
     }
 
     public function sessions(): HasMany
@@ -53,13 +53,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Session::class, 'user_id');
     }
 
-    public function userPaymentMethods(): BelongsTo
+    public function userPaymentMethods(): HasMany
     {
-        return $this->belongsTo(UserPaymentMethods::class, 'user_id');
+        return $this->hasMany(UserPaymentMethods::class, 'user_id');
     }
 
-    public function xenditPlan(): BelongsTo
+    public function xenditPlan(): HasOne
     {
-        return $this->belongsTo(XenditPlans::class, 'user_id');
+        return $this->hasOne(XenditPlans::class, 'user_id');
     }
 }
