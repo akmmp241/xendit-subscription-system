@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\SessionHandler;
+use Illuminate\Support\Str;
 
 abstract class Controller
 {

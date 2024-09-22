@@ -6,10 +6,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\CssSelector\Exception\InternalErrorException;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Response as ResponseCode;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -49,13 +49,22 @@ return Application::configure(basePath: dirname(__DIR__))
             ])->setStatusCode(ResponseCode::HTTP_UNAUTHORIZED);
         });
 
-        $exceptions->render(function (BadRequestException $e) {
+        $exceptions->render(function (BadRequestHttpException $e) {
             return Response::json([
                 "status" => "BAD_REQUEST",
                 "message" => $e->getMessage() ?? "Bad Request",
                 "data" => null,
                 "errors" => null
             ])->setStatusCode(ResponseCode::HTTP_BAD_REQUEST);
+        });
+
+        $exceptions->render(function (TooManyRequestsHttpException $e) {
+            return Response::json([
+                "status" => "TOO_MANY_REQUESTS",
+                "message" => $e->getMessage() ?? "Too Many Requests",
+                "data" => null,
+                "errors" => null
+            ])->setStatusCode(ResponseCode::HTTP_TOO_MANY_REQUESTS);
         });
 
         $exceptions->render(function (Exception $e) {

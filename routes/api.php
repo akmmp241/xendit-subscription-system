@@ -17,7 +17,14 @@ Route::middleware([AuthenticatedMiddleware::class, "api"])->group(function () {
     Route::post('/auth/refresh', [AuthController::class, 'refresh'])
         ->withoutMiddleware([AuthenticatedMiddleware::class, "api"]);
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/me', [AuthController::class, 'update']);
     Route::delete('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/verification', [AuthController::class, 'verification']);
+    Route::post('/auth/verify', [AuthController::class, 'verify']);
+    Route::post('/auth/forget/password', [AuthController::class, 'forget'])
+        ->withoutMiddleware([AuthenticatedMiddleware::class, "api"]);
+    Route::patch('/auth/reset/password', [AuthController::class, 'reset'])
+        ->withoutMiddleware([AuthenticatedMiddleware::class, "api"]);
 
     Route::get('/users/payment-methods', [XenditPaymentMethodsController::class, 'all']);
     Route::post('/users/payment-methods', [XenditPaymentMethodsController::class, 'create']);
